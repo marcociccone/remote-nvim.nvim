@@ -4,10 +4,10 @@
 set -eo pipefail
 
 # Check if either curl or wget is available on the system
-if command -v curl &>/dev/null; then
-	downloader="curl"
-elif command -v wget &>/dev/null; then
+if command -v wget &>/dev/null; then
 	downloader="wget"
+elif command -v curl &>/dev/null; then
+	downloader="curl"
 else
 	echo "Error: This script requires either curl or wget to be installed."
 	exit 1
@@ -47,7 +47,8 @@ function download_neovim() {
 	local download_path=""
 
 	if [ "$os" == "Linux" ]; then
-		download_url="https://github.com/neovim/neovim/releases/download/${version}/nvim.appimage"
+    echo "Linux"
+		download_url="https://github.com/neovim/neovim-releases/releases/download/${version}/nvim.appimage"
 		download_path="$download_dir/nvim-$version-linux.appimage"
 
 		set +e # Prevent termination based on compare_version's return
@@ -56,10 +57,12 @@ function download_neovim() {
 		set -e # Re-enable termination based on return values
 
 		if [[ $version == "nightly" ]] || [[ $version == "stable" ]] || [[ $result -eq 1 ]]; then
-			download_url="https://github.com/neovim/neovim/releases/download/${version}/nvim-linux-${arch_type}.appimage"
+      echo "nightly or stable"
+			download_url="https://github.com/neovim/neovim-releases/releases/download/${version}/nvim-linux-${arch_type}.appimage"
 			download_path="$download_dir/nvim-$version-linux-$arch_type.appimage"
 		fi
 	elif [ "$os" == "Darwin" ]; then
+    echo "Darwin"
 		download_url="https://github.com/neovim/neovim/releases/download/${version}/nvim-macos.tar.gz"
 		download_path="$download_dir/nvim-$version-macos.tar.gz"
 
@@ -69,6 +72,7 @@ function download_neovim() {
 		set -e # Re-enable termination based on return values
 
 		if [[ $version == "nightly" ]] || [[ $version == "stable" ]] || [[ $result -eq 1 ]]; then
+      echo "nightly or stable"
 			download_url="https://github.com/neovim/neovim/releases/download/${version}/nvim-macos-${arch_type}.tar.gz"
 			download_path="$download_dir/nvim-$version-macos-$arch_type.tar.gz"
 		fi
@@ -93,11 +97,12 @@ function download_neovim() {
 	fi
 
 	echo "Downloading Neovim..."
+	echo "$download_url" "$download_path"
 	download "$download_url" "$download_path"
-	if [[ $version != "nightly" ]]; then
-		# Nightly versions do not come with checksums
-		download "$download_url".sha256sum "$checksum_path"
-	fi
+	# if [[ $version != "nightly" ]]; then
+	# 	# Nightly versions do not come with checksums
+	# 	download "$download_url".sha256sum "$checksum_path"
+	# fi
 	echo "Download completed."
 }
 
